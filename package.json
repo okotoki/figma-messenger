@@ -1,0 +1,32 @@
+{
+  "name": "figma-messenger",
+  "version": "1.0.0",
+  "description": "Type-safe communication for good.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "NODE_ENV=production tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okotoki/figma-messenger.git"
+  },
+  "keywords": [
+    "figma",
+    "figma-plugins",
+    "emitter"
+  ],
+  "author": "Opudalo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/okotoki/figma-messenger/issues"
+  },
+  "homepage": "https://github.com/okotoki/figma-messenger#readme",
+  "devDependencies": {
+    "@types/figma": "^1.0.1",
+    "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.1.0",
+    "typescript": "^3.7.4"
+  }
+}
