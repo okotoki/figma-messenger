@@ -3,6 +3,7 @@
 README.md
 src
 examples
+media
 tsconfig.json
 tslint.json
 yarn.lock

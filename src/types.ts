@@ -8,7 +8,7 @@ export enum MessengerType {
 export type Listener = (...args: any[]) => void
 
 export interface IListeners {
-  [eventName: string]: Listener[]
+  [message: string]: Listener[]
 }
 
 export interface IListenersStore {
