@@ -59,15 +59,17 @@ iframeMessenger.on('heyIframe', sel => console.log(sel))
 iframeMessenger.off('heyIframe')
 ```
 
-See more comprehensive live figma plugin example at [examples/figma-plugin](examples/figma-plugin). Files `shared/types.ts`, `app.tsx` and `main/index.ts`
+See more comprehensive live figma plugin example at [examples/figma-plugin](examples/figma-plugin).  
+Files `shared/types.ts`, `app.tsx` and `main/index.ts`
 
 
 ## Api
 
-### createIframeMessenger<MessagesToSend, MessagesToListen>() / createMainThreadMessenger<MessagesToSend, MessagesToListen>()
+### createIframeMessenger<MessagesToSend, MessagesToListen> / createMainThreadMessenger<MessagesToSend, MessagesToListen>
 
-Creates a messenger instance for Iframe and Main Thread sides respectively. Take 2 type arguments:
-`MessagesToSend` – messages to send signature
+Creates a messenger instance for Iframe and Main Thread sides respectively.  
+Takes 2 type arguments:  
+`MessagesToSend` – messages to send signature  
 `MessagesToListen` – messages to receive signature
 
 Example:
@@ -89,19 +91,20 @@ const iframeMessenger = createIframeMessenger<IframeToMain, MainToIframe>()
 const mainThreadMessenger = createMainThreadMessenger<MainToIframe, IframeToMain>()
 ```
 
-Single global listener under the hood makes it possible to create multiple instances, which won't conflict (but would handle messages with same name).
+Single global listener under the hood makes it possible to create multiple instances, which won't conflict, but would handle messages with same name.
 ```typescript
 const m1 = createIframeMessenger()
 const m2 = createIframeMessenger()
 
 
-// When fired on Main Thread side, "msg" message would be received by both handlers.
+// When fired, "msg" message would be received by both handlers.
 m1.on('msg', callback1)
 m2.on('msg', callback2)
 ```
 
 ### .on(message: string, listener: (...arg: any[]) => void): void
-Add listener for the message from opposite side. Callbacks can take no or multiple arguments.
+Add listener for the message from opposite side.  
+Callbacks can take no or multiple arguments.
 ```typescript
 messenger.on('aMessage', handleMessage)
 messenger.on('someMessage', (data) => doSomething(data))
