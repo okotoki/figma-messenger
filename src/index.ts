@@ -37,36 +37,38 @@ function createMessenger<
    * IMPORTANT.
    * All messenger instances share same Global Messenger –
    * store for all listeners and original subscriber and receiver
-   * to the events from the other side (iframe/main).
+   * to the messages from the other side (iframe/main).
    */
   globalMessenger = globalMessenger || createGlobalMessenger(type)
 
   const id = getId()
 
-  function send<E extends keyof MessagesToSend>(event: Extract<E, string>): void
   function send<E extends keyof MessagesToSend>(
-    event: Extract<E, string>,
+    message: Extract<E, string>
+  ): void
+  function send<E extends keyof MessagesToSend>(
+    message: Extract<E, string>,
     ...args: Parameters<MessagesToSend[E]>
   ): void
   function send<E extends keyof MessagesToSend>(
-    event: Extract<E, string>,
+    message: Extract<E, string>,
     ...args: Parameters<MessagesToSend[E]>
   ) {
-    globalMessenger.sendMessage(event, args)
+    globalMessenger.sendMessage(message, args)
   }
 
   return {
     on<E extends keyof MessagesToListen>(
-      event: Extract<E, string>,
+      message: Extract<E, string>,
       listener: MessagesToListen[E]
     ): void {
-      globalMessenger.listeners.set(id, event, listener)
+      globalMessenger.listeners.set(id, message, listener)
     },
     off<E extends keyof MessagesToListen>(
-      event: Extract<E, string>,
+      message: Extract<E, string>,
       listener?: MessagesToListen[E]
     ) {
-      globalMessenger.listeners.remove(id, event, listener)
+      globalMessenger.listeners.remove(id, message, listener)
     },
     send
   }
