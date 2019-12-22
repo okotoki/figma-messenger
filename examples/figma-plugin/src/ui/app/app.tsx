@@ -4,7 +4,7 @@ import { IframeToMain, Layers, MainToIframe } from 'shared/types'
 import { createIframeMessenger } from '../../../../../src'
 import * as styles from './app.css'
 
-const messenger = createIframeMessenger<MainToIframe, IframeToMain>()
+const messenger = createIframeMessenger<IframeToMain, MainToIframe>()
 
 export const App = () => {
   const [layers, setLayers] = React.useState<Layers[]>([])
@@ -13,7 +13,7 @@ export const App = () => {
   )
 
   React.useEffect(() => {
-    // Listen for SelectionChanged event
+    // Listen for SelectionChanged message
     messenger.on('selectionChanged', els => {
       console.log('[IFRAME] Message received from Main Thread.', els)
       if (!!els && els.length) {

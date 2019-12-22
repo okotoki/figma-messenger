@@ -1,29 +1,22 @@
 import { IListenersStore, Listener, MessengerType } from './types'
 
-function isUndefined(val: any | undefined): val is undefined {
-  return val === undefined
-}
+export const isUndefined = (val: any | undefined): val is undefined =>
+  val === undefined
 
-function isObject(val: any): boolean {
-  return typeof val === 'object' && val !== null
-}
+const isObject = (val: any): boolean => typeof val === 'object' && val !== null
 
 function executeListeners(data: any, handlers: IListenersStore) {
-  if (
-    isUndefined(data) ||
-    !isObject(data) ||
-    !data.type ||
-    isUndefined(data.data)
-  ) {
+  if (isUndefined(data) || !isObject(data) || !data.type) {
     return
   }
+
+  data = data as { type: string; data: any[] | undefined }
 
   Object.keys(handlers).map(k => {
     if (handlers[k] && handlers[k][data.type]) {
       const cbs = handlers[k][data.type]
       if (!!cbs && !!cbs.length) {
-        // log(`Message received '${data.type}'`, data.data)
-        cbs.map(cb => cb(...data.data))
+        cbs.map(cb => (isUndefined(data.data) ? cb() : cb(...data.data)))
       }
     }
   })
@@ -42,9 +35,9 @@ function listen(to: MessengerType, executeListeners: (data: any) => void) {
   }
 }
 
-function send(from: MessengerType, event: string, data: any) {
+function send(from: MessengerType, message: string, data: any) {
   const msg = {
-    type: event,
+    type: message,
     data
   }
 
@@ -67,24 +60,24 @@ export function createGlobalMessenger(type: MessengerType) {
   listen(type, messageHandler)
 
   return {
-    sendMessage(event: string, data: any) {
-      send(type, event, data)
+    sendMessage(name: string, data: any) {
+      send(type, name, data)
     },
 
     listeners: {
-      get(id: string, event: string): Listener[] | undefined {
+      get(id: string, name: string): Listener[] | undefined {
         if (
           isUndefined(listenersStore[id]) ||
-          isUndefined(listenersStore[id][event])
+          isUndefined(listenersStore[id][name])
         ) {
           return
         }
 
-        return listenersStore[id][event.toString()]
+        return listenersStore[id][name.toString()]
       },
 
-      set(id: string, event: string, cb: Listener): void {
-        const e = event.toString()
+      set(id: string, name: string, cb: Listener): void {
+        const e = name.toString()
 
         if (isUndefined(listenersStore[id])) {
           listenersStore[id] = {}
@@ -97,8 +90,8 @@ export function createGlobalMessenger(type: MessengerType) {
         listenersStore[id][e].push(cb)
       },
 
-      remove(id: string, event: string, cb?: Listener) {
-        const e = event.toString()
+      remove(id: string, name: string, cb?: Listener) {
+        const e = name.toString()
 
         if (
           isUndefined(listenersStore[id]) ||

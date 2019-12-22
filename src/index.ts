@@ -1,4 +1,4 @@
-import { createGlobalMessenger } from './global'
+import { createGlobalMessenger, isUndefined } from './global'
 import { GlobalMessenger, Listener, MessengerType } from './types'
 
 let id = 0
@@ -9,23 +9,29 @@ function getId() {
 
 let globalMessenger: GlobalMessenger
 
+type ListenersMap<U> = { [K in keyof U]: Listener }
+
 export function createMainThreadMessenger<
-  EventsToListen extends { [K in keyof EventsToListen]: Listener },
-  EventsToSend extends { [K in keyof EventsToSend]: Listener }
+  MessagesToSend extends ListenersMap<MessagesToSend>,
+  MessagesToListen extends ListenersMap<MessagesToListen>
 >() {
-  return createMessenger<EventsToListen, EventsToSend>(MessengerType.main)
+  if (isUndefined(figma)) {
+    throw Error('Attempted to create a messanger on wrong side.')
+  }
+
+  return createMessenger<MessagesToSend, MessagesToListen>(MessengerType.main)
 }
 
 export function createIframeMessenger<
-  EventsToListen extends { [K in keyof EventsToListen]: Listener },
-  EventsToSend extends { [K in keyof EventsToSend]: Listener }
+  MessagesToSend extends ListenersMap<MessagesToSend>,
+  MessagesToListen extends ListenersMap<MessagesToListen>
 >() {
-  return createMessenger<EventsToListen, EventsToSend>(MessengerType.iframe)
+  return createMessenger<MessagesToSend, MessagesToListen>(MessengerType.iframe)
 }
 
 function createMessenger<
-  EventsToListen extends { [K in keyof EventsToListen]: Listener },
-  EventsToSend extends { [K in keyof EventsToSend]: Listener }
+  MessagesToSend extends ListenersMap<MessagesToSend>,
+  MessagesToListen extends ListenersMap<MessagesToListen>
 >(type: MessengerType) {
   /**
    * IMPORTANT.
@@ -37,24 +43,31 @@ function createMessenger<
 
   const id = getId()
 
+  function send<E extends keyof MessagesToSend>(event: Extract<E, string>): void
+  function send<E extends keyof MessagesToSend>(
+    event: Extract<E, string>,
+    ...args: Parameters<MessagesToSend[E]>
+  ): void
+  function send<E extends keyof MessagesToSend>(
+    event: Extract<E, string>,
+    ...args: Parameters<MessagesToSend[E]>
+  ) {
+    globalMessenger.sendMessage(event, args)
+  }
+
   return {
-    on<E extends keyof EventsToListen>(
+    on<E extends keyof MessagesToListen>(
       event: Extract<E, string>,
-      listener: EventsToListen[E]
+      listener: MessagesToListen[E]
     ): void {
       globalMessenger.listeners.set(id, event, listener)
     },
-    off<E extends keyof EventsToListen>(
+    off<E extends keyof MessagesToListen>(
       event: Extract<E, string>,
-      listener?: EventsToListen[E]
+      listener?: MessagesToListen[E]
     ) {
       globalMessenger.listeners.remove(id, event, listener)
     },
-    send<E extends keyof EventsToSend>(
-      event: Extract<E, string>,
-      ...args: Parameters<EventsToSend[E]>
-    ) {
-      globalMessenger.sendMessage(event, args)
-    }
+    send
   }
 }

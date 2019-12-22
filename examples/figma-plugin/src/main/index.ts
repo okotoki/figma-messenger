@@ -9,7 +9,7 @@ figma.showUI(__html__, {
 })
 
 // Create messenger on the Main Thread side
-const messenger = createMainThreadMessenger<IframeToMain, MainToIframe>()
+const messenger = createMainThreadMessenger<MainToIframe, IframeToMain>()
 
 // Handler for "heyFromIframe" message.
 const handler = (msg: string) => {
