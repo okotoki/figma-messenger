@@ -14,25 +14,25 @@ type ListenersMap<U> = { [K in keyof U]: Listener }
 export function createMainThreadMessenger<
   MessagesToSend extends ListenersMap<MessagesToSend>,
   MessagesToListen extends ListenersMap<MessagesToListen>
->() {
+>(name?: string) {
   if (isUndefined(figma)) {
     throw Error('Attempted to create a messanger on wrong side.')
   }
 
-  return createMessenger<MessagesToSend, MessagesToListen>(MessengerType.main)
+  return createMessenger<MessagesToSend, MessagesToListen>(MessengerType.main, name)
 }
 
 export function createIframeMessenger<
   MessagesToSend extends ListenersMap<MessagesToSend>,
   MessagesToListen extends ListenersMap<MessagesToListen>
->() {
-  return createMessenger<MessagesToSend, MessagesToListen>(MessengerType.iframe)
+>(name?: string) {
+  return createMessenger<MessagesToSend, MessagesToListen>(MessengerType.iframe, name)
 }
 
 function createMessenger<
   MessagesToSend extends ListenersMap<MessagesToSend>,
   MessagesToListen extends ListenersMap<MessagesToListen>
->(type: MessengerType) {
+>(type: MessengerType, name?: string) {
   /**
    * IMPORTANT.
    * All messenger instances share same Global Messenger –
@@ -41,7 +41,7 @@ function createMessenger<
    */
   globalMessenger = globalMessenger || createGlobalMessenger(type)
 
-  const id = getId()
+  const id = name || getId()
 
   function send<E extends keyof MessagesToSend>(
     message: Extract<E, string>
