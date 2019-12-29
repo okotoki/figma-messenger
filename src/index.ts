@@ -54,7 +54,7 @@ function createMessenger<
     message: Extract<E, string>,
     ...args: Parameters<MessagesToSend[E]>
   ) {
-    globalMessenger.sendMessage(message, args)
+    globalMessenger.sendMessage(id, message, args)
   }
 
   return {

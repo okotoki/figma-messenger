@@ -6,20 +6,16 @@ export const isUndefined = (val: any | undefined): val is undefined =>
 const isObject = (val: any): boolean => typeof val === 'object' && val !== null
 
 function executeListeners(data: any, handlers: IListenersStore) {
-  if (isUndefined(data) || !isObject(data) || !data.type) {
+  if (isUndefined(data) || !isObject(data) || !data.type || !data.id) {
     return
   }
 
-  data = data as { type: string; data: any[] | undefined }
-
-  Object.keys(handlers).map(k => {
-    if (handlers[k] && handlers[k][data.type]) {
-      const cbs = handlers[k][data.type]
-      if (!!cbs && !!cbs.length) {
-        cbs.map(cb => (isUndefined(data.data) ? cb() : cb(...data.data)))
-      }
-    }
-  })
+  data = data as { id: string; type: string; data: any[] | undefined }
+  const key = data.id + data.type
+  const cbs = handlers[key]
+  if (!!cbs && !!cbs.length) {
+    cbs.forEach(cb => (isUndefined(data.data) ? cb() : cb(...data.data)))
+  }
 }
 
 function listen(to: MessengerType, executeListeners: (data: any) => void) {
@@ -35,8 +31,9 @@ function listen(to: MessengerType, executeListeners: (data: any) => void) {
   }
 }
 
-function send(from: MessengerType, message: string, data: any) {
+function send(from: MessengerType, id: string, message: string, data: any) {
   const msg = {
+    id,
     type: message,
     data
   }
@@ -60,50 +57,42 @@ export function createGlobalMessenger(type: MessengerType) {
   listen(type, messageHandler)
 
   return {
-    sendMessage(name: string, data: any) {
-      send(type, name, data)
+    sendMessage(id: string, name: string, data: any) {
+      send(type, id, name, data)
     },
 
     listeners: {
       get(id: string, name: string): Listener[] | undefined {
-        if (
-          isUndefined(listenersStore[id]) ||
-          isUndefined(listenersStore[id][name])
-        ) {
+        const key = id + name
+
+        if (isUndefined(listenersStore[key])) {
           return
         }
 
-        return listenersStore[id][name.toString()]
+        return listenersStore[key]
       },
 
       set(id: string, name: string, cb: Listener): void {
-        const e = name.toString()
+        const key = id + name
 
-        if (isUndefined(listenersStore[id])) {
-          listenersStore[id] = {}
+        if (isUndefined(listenersStore[key])) {
+          listenersStore[key] = []
         }
 
-        if (isUndefined(listenersStore[id][e])) {
-          listenersStore[id][e] = []
-        }
-
-        listenersStore[id][e].push(cb)
+        listenersStore[key].push(cb)
       },
 
       remove(id: string, name: string, cb?: Listener) {
-        const e = name.toString()
+        const key = id + name
 
-        if (
-          isUndefined(listenersStore[id]) ||
-          isUndefined(listenersStore[id][e])
-        ) {
+        if (isUndefined(listenersStore[key])) {
           return
         }
 
         if (!!cb) {
-          listenersStore[id][e] = listenersStore[id][e].filter(x => x !== cb)
+          listenersStore[key] = listenersStore[key].filter(x => x !== cb)
         } else {
-          delete listenersStore[id][e]
+          delete listenersStore[key]
         }
       }
     }

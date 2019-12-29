@@ -7,12 +7,8 @@ export enum MessengerType {
 
 export type Listener = (...args: any[]) => void
 
-export interface IListeners {
-  [message: string]: Listener[]
-}
-
 export interface IListenersStore {
-  [id: string]: IListeners
+  [key: string]: Listener[]
 }
 
 export type GlobalMessenger = ReturnType<typeof createGlobalMessenger>
