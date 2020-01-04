@@ -102,7 +102,7 @@ const namedIframeMessenger = createIframeMessenger<IframeToMain, MainToIframe>('
 // global messenger
 const mainThreadMessenger = createMainThreadMessenger<MainToIframe, IframeToMain>()
 
-// named messenger. Will communicate only to messenger 'SPECIAL' messenger on iframe side.
+// named messenger. Will communicate only to messenger 'SPECIAL' on iframe side.
 const namedMainThreadMessenger = createMainThreadMessenger<IframeToMain, MainToIframe>('SPECIAL')
 ```
 
