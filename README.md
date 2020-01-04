@@ -65,10 +65,11 @@ Files `shared/types.ts`, `app.tsx` and `main/index.ts`
 
 ## Api
 
-### createIframeMessenger<MessagesToSend, MessagesToListen> / createMainThreadMessenger<MessagesToSend, MessagesToListen>
+### createIframeMessenger<MessagesToSend, MessagesToListen>(name?: string) / createMainThreadMessenger<MessagesToSend, MessagesToListen>(name?: string)
 
 Creates a messenger instance for Iframe and Main Thread sides respectively.  
-Takes 2 type arguments:  
+Optional `name` argument. If not set, messenger will be global. Otherwise only will receive events from the messenger with the same name.  
+Also, takes 2 type arguments:  
 `MessagesToSend` – messages to send signature  
 `MessagesToListen` – messages to receive signature
 
@@ -84,22 +85,39 @@ interface MainToIframe {
   heyIframe(data: any): void
 }
 
-// somewhere in iframe code:
-const iframeMessenger = createIframeMessenger<IframeToMain, MainToIframe>()
+/**
+ * somewhere in iframe code: 
+ */
 
-// somewhere in main thread code:
+// global messenger
+const iframeMessenger = createIframeMessenger<IframeToMain, MainToIframe>()
+// named messenger. Will communicate only to messenger with the same name on main thread.
+const namedIframeMessenger = createIframeMessenger<IframeToMain, MainToIframe>('SPECIAL')
+
+
+/**
+ * somewhere in main thread code:
+ */
+
+// global messenger
 const mainThreadMessenger = createMainThreadMessenger<MainToIframe, IframeToMain>()
+
+// named messenger. Will communicate only to messenger 'SPECIAL' messenger on iframe side.
+const namedMainThreadMessenger = createMainThreadMessenger<IframeToMain, MainToIframe>('SPECIAL')
 ```
 
 Single global listener under the hood makes it possible to create multiple instances, which won't conflict, but would handle messages with same name.
 ```typescript
 const m1 = createIframeMessenger()
 const m2 = createIframeMessenger()
+const m3 = createIframeMessenger('SPECIAL')
 
 
-// When fired, "msg" message would be received by both handlers.
-m1.on('msg', callback1)
-m2.on('msg', callback2)
+// When fired globally, "msg" message would be received by m1 and m2, but not by m3.
+m1.on('msg', callback1) // receives global message
+m2.on('msg', callback2) // receives global message
+
+m3.on('msg', callback3) // only will receive from messenger named 'SPECIAL' on main thread side
 ```
 
 ### .on(message: string, listener: (...arg: any[]) => void): void
