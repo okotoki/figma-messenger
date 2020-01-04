@@ -4,7 +4,7 @@ import { IframeToMain, Layers, MainToIframe } from 'shared/types'
 import { createIframeMessenger } from '../../../../../src'
 import * as styles from './app.css'
 
-const messenger = createIframeMessenger<IframeToMain, MainToIframe>()
+const messenger = createIframeMessenger<IframeToMain, MainToIframe>('someName')
 
 export const App = () => {
   const [layers, setLayers] = React.useState<Layers[]>([])
