@@ -8,8 +8,18 @@ figma.showUI(__html__, {
   height: 300
 })
 
-// Create messenger on the Main Thread side
-const messenger = createMainThreadMessenger<MainToIframe, IframeToMain>()
+// Create named messenger on the Main Thread side
+const messenger = createMainThreadMessenger<MainToIframe, IframeToMain>(
+  'someName'
+)
+
+// create global messenger
+const messenger2 = createMainThreadMessenger<MainToIframe, IframeToMain>()
+messenger2.on('heyFromIframe', () => {
+  console.log(
+    'This won"t ever fire, as communication is between named messengers'
+  )
+})
 
 // Handler for "heyFromIframe" message.
 const handler = (msg: string) => {

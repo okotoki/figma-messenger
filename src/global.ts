@@ -1,23 +1,31 @@
-import { IListenersStore, Listener, MessengerType } from './types'
+import { Listener, ListenersStore, MessengerType } from './types'
 
 export const isUndefined = (val: any | undefined): val is undefined =>
   val === undefined
 
 const isObject = (val: any): boolean => typeof val === 'object' && val !== null
 
-function executeListeners(data: any, handlers: IListenersStore) {
-  if (isUndefined(data) || !isObject(data) || !data.type) {
+function executeListenersX(data: any | Message, handlers: ListenersStore) {
+  if (isUndefined(data) || !isObject(data) || !data.message) {
     return
   }
 
-  data = data as { type: string; data: any[] | undefined }
+  const d = data as Message
 
-  Object.keys(handlers).map(k => {
-    if (handlers[k] && handlers[k][data.type]) {
-      const cbs = handlers[k][data.type]
-      if (!!cbs && !!cbs.length) {
-        cbs.map(cb => (isUndefined(data.data) ? cb() : cb(...data.data)))
-      }
+  Object.keys(handlers).forEach(id => {
+    const h = handlers[id]
+    if (isUndefined(h) || isUndefined(h.listeners[d.message])) {
+      return
+    }
+
+    // Only call listeners if message is global, or names match
+    if (
+      (isUndefined(d.messengerName) && isUndefined(h.name)) ||
+      d.messengerName === h.name
+    ) {
+      h.listeners[d.message].forEach(cb =>
+        isUndefined(d.data) ? cb() : cb(...d.data)
+      )
     }
   })
 }
@@ -35,13 +43,23 @@ function listen(to: MessengerType, executeListeners: (data: any) => void) {
   }
 }
 
-function send(from: MessengerType, message: string, data: any) {
-  const msg = {
-    type: message,
+interface Message {
+  messengerName: string | undefined
+  message: string
+  data: any[]
+}
+
+function send(
+  from: MessengerType,
+  messengerName: string | undefined,
+  message: string,
+  data: any[]
+) {
+  const msg: Message = {
+    message,
+    messengerName,
     data
   }
-
-  // log(`Send '${type}' to ${to}`, data)
 
   if (from === MessengerType.main) {
     figma.ui.postMessage(msg)
@@ -51,60 +69,65 @@ function send(from: MessengerType, message: string, data: any) {
 }
 
 export function createGlobalMessenger(type: MessengerType) {
-  const listenersStore: IListenersStore = {}
+  const listenersStore: ListenersStore = {}
 
   const messageHandler = (data: any) => {
-    executeListeners(data, listenersStore)
+    executeListenersX(data, listenersStore)
   }
 
   listen(type, messageHandler)
 
   return {
-    sendMessage(name: string, data: any) {
-      send(type, name, data)
+    sendMessage(
+      messengerName: string | undefined,
+      message: string,
+      data: any[]
+    ) {
+      send(type, messengerName, message, data)
     },
 
-    listeners: {
-      get(id: string, name: string): Listener[] | undefined {
-        if (
-          isUndefined(listenersStore[id]) ||
-          isUndefined(listenersStore[id][name])
-        ) {
-          return
+    addMessengerInstanceToStore(id: string, name?: string) {
+      if (isUndefined(listenersStore[id])) {
+        listenersStore[id] = {
+          name,
+          listeners: {}
         }
+      }
+    },
 
-        return listenersStore[id][name.toString()]
-      },
+    addListener(id: string, message: string, cb: Listener): void {
+      const l = listenersStore[id]
 
-      set(id: string, name: string, cb: Listener): void {
-        const e = name.toString()
+      if (isUndefined(l)) {
+        throw Error(
+          'Messenger instance not found in listeners store. Call addMessengerInstanceToStore first.'
+        )
+      }
 
-        if (isUndefined(listenersStore[id])) {
-          listenersStore[id] = {}
-        }
+      if (isUndefined(l.listeners[message])) {
+        l.listeners[message] = []
+      }
 
-        if (isUndefined(listenersStore[id][e])) {
-          listenersStore[id][e] = []
-        }
+      l.listeners[message].push(cb)
+    },
 
-        listenersStore[id][e].push(cb)
-      },
+    removeListener(id: string, message: string, cb?: Listener) {
+      const l = listenersStore[id]
 
-      remove(id: string, name: string, cb?: Listener) {
-        const e = name.toString()
+      if (isUndefined(l)) {
+        throw Error(
+          'Messenger instance not found in listeners store. Call addMessengerInstanceToStore first.'
+        )
+      }
 
-        if (
-          isUndefined(listenersStore[id]) ||
-          isUndefined(listenersStore[id][e])
-        ) {
-          return
-        }
+      if (isUndefined(l.listeners[message])) {
+        return
+      }
 
-        if (!!cb) {
-          listenersStore[id][e] = listenersStore[id][e].filter(x => x !== cb)
-        } else {
-          delete listenersStore[id][e]
-        }
+      if (!!cb) {
+        l.listeners[message] = l.listeners[message].filter(x => x !== cb)
+      } else {
+        delete l.listeners[message]
       }
     }
   }
