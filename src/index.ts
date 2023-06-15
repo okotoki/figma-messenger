@@ -52,9 +52,6 @@ function createMessenger<
   globalMessenger.addMessengerInstanceToStore(id, name)
 
   function send<E extends keyof MessagesToSend>(
-    message: Extract<E, string>
-  ): void
-  function send<E extends keyof MessagesToSend>(
     message: Extract<E, string>,
     ...args: Parameters<MessagesToSend[E]>
   ): void
