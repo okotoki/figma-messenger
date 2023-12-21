@@ -5,10 +5,6 @@ export enum MessengerType {
   main = 'main'
 }
 
-declare global {
-  const figma: any
-}
-
 export type Listener = (...args: any[]) => void
 
 export interface ListenersStore {

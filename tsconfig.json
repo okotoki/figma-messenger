@@ -11,7 +11,7 @@
     "strict": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "typeRoots": ["node_modules/@types", "./custom_typings"],
+    "types": ["@figma/plugin-typings"],
     "moduleResolution": "node",
     "skipLibCheck": true,
     "baseUrl": "./src"

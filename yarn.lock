@@ -18,10 +18,10 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@types/figma@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.npmjs.org/@types/figma/-/figma-1.0.3.tgz#961a613c4de0627d520a16b7f82fe9627481e27f"
-  integrity sha512-2jDGdTYyLabbRxAKLceNS7mfo06bwknvI27CGLbl7UKobHmIZ+HW/1dWEsLE0SC4yPf3/sL1l5atw3YCUXhJHQ==
+"@figma/plugin-typings@^1.0.0":
+  version "1.82.0"
+  resolved "https://registry.yarnpkg.com/@figma/plugin-typings/-/plugin-typings-1.82.0.tgz#7f8c8514bb18dc303e3b194b60827fec1f2a5e9f"
+  integrity sha512-To5M9VRpNysrGGtZtPF5Ke9eobfhTUr7kieAsYMhpPg+VKdr0EM6XDFtCqhtuDrLfPAZFa/cBQo68auWwD4mlA==
 
 ansi-styles@^3.2.1:
   version "3.2.1"
